@@ -1,0 +1,80 @@
+server:
+  port: ${APP_PORT:80}
+
+spring:
+  application:
+    name: API-GATEWAY
+  output:
+    ansi:
+      enabled: always
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOrigins: "*"  # For All Use"*", Known Server App URL you can Mention (React -> http://localhost:3000/)
+            allowedMethods: "*"
+            allowed-headers: "*"
+#      routes:
+#        - id: API-GENERATOR
+#          uri: lb://API-GENERATOR
+#          predicates: # need to route manually for swagger
+#            - Path=/api-generator/v3/api-docs, /api/**, /bot/**, /date/**, /js/**
+
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+    config-url: /v3/api-docs/swagger-config
+    urls:
+      - url: /v3/api-docs
+        name: API Gateway Service
+        display-name: API GateWay Service
+      - url: /api-generator/v3/api-docs
+        name: API Generator
+        display-name: API Generator Service
+
+eureka:
+  instance:
+    prefer-ip-address: true
+    hostname: ${SERVICE_HOSTNAME}
+  client:
+    service-url:
+      defaultZone: ${SERVICE_URL}/eureka
+
+management:
+  endpoint:
+    health:
+      show-details: always
+    shutdown:
+      enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  info:
+    env:
+      enabled: true
+    os:
+      enabled: true
+    java:
+      enabled: true
+
+logging:
+  pattern:
+    level: '%5p [${spring.application.name}, ${spring.profiles.active}]'
+  file:
+    name: ${LOG_PATH:.}/api-gateway-app.log
+
+info:
+  app:
+    name: ${spring.application.name}
+    description: APIs Generator Serves APIs and Features
+    environment: ${spring.profiles.active}
+    version: '@project.version@' # Reading From Pom

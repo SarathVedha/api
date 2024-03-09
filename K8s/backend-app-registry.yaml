@@ -1,0 +1,119 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: dev
+
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: backend-app-registry-stateful
+  namespace: dev
+spec:
+  selector:
+    matchLabels:
+      app: backend-app-registry
+  serviceName: "backend-app-registry-headless" # --headless service name
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: backend-app-registry
+    spec:
+      serviceAccountName: api-app-sa # --ServiceAccount name
+      containers:
+      - name: backend-app-registry
+        image: sarathvedha/backend-registry-app:latest
+        env:
+          - name: APP_PROFILE
+            valueFrom:
+              configMapKeyRef:
+                key: appProfile
+                name: backend-app-registry-config
+          - name: APP_PORT
+            valueFrom:
+              configMapKeyRef:
+                key: appPort
+                name: backend-app-registry-config
+          - name: LOG_PATH
+            valueFrom:
+              configMapKeyRef:
+                key: logPath
+                name: backend-app-registry-config
+          - name: SERVICE_URL
+            valueFrom:
+              configMapKeyRef:
+                key: serviceUrl
+                name: backend-app-registry-config
+        resources:
+          requests:
+            memory: "200Mi"
+            cpu: "50m"
+          limits:
+            memory: "500Mi"
+            cpu: "500m"
+        ports:
+        - containerPort: 80
+          name: web
+        readinessProbe:
+          httpGet:
+            path: /actuator/health
+            port: 80
+          initialDelaySeconds: 30
+          timeoutSeconds: 10
+          periodSeconds: 3
+          failureThreshold: 2
+        livenessProbe:
+          httpGet:
+            path: /actuator/health
+            port: 80
+          initialDelaySeconds: 40
+          timeoutSeconds: 5
+          periodSeconds: 8
+          failureThreshold: 1
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-app-registry-headless
+  namespace: dev
+  labels:
+    app: backend-app-registry
+spec:
+  selector:
+    app: backend-app-registry
+  ports:
+  - port: 80
+    name: web
+  clusterIP: None # headless service
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-app-registry-svc
+  namespace: dev
+  labels:
+    app: backend-app-registry
+    spring-boot: "true"
+spec:
+  selector:
+    app: backend-app-registry
+  ports:
+  - port: 80
+    targetPort: 80 #Pod or container port
+  type: ClusterIP
+
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backend-app-registry-config
+  namespace: dev
+data:
+  appProfile: "prod"
+  appPort: "80"
+  logPath: /app/log
+  serviceUrl: "http://backend-app-registry-stateful-0.backend-app-registry-headless:80" # --headless service

@@ -1,0 +1,54 @@
+server:
+  port: ${APP_PORT}
+
+spring:
+  application:
+    name: API-CONFIGS
+  output:
+    ansi:
+      enabled: always
+  cloud:
+    config:
+      server:
+        git:
+          uri: ${GIT_URL}
+          default-label: ${GIT_BRANCH}
+          search-paths: ${GIT_PATH}
+          clone-on-start: true
+          basedir: ${BASE_CONFIG_PATH}
+
+#eureka:
+#  client:
+#    service-url:
+#      defaultZone: ${SERVICE_URL}/eureka
+
+management:
+  endpoint:
+    health:
+      show-details: always
+    shutdown:
+      enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  info:
+    env:
+      enabled: true
+    os:
+      enabled: true
+    java:
+      enabled: true
+
+logging:
+  pattern:
+    level: '%5p [${spring.application.name}, ${spring.profiles.active}]'
+  file:
+    name: ${LOG_PATH:.}/api-config-app.log
+
+info:
+  app:
+    name: ${spring.application.name}
+    description: APIs Config Server
+    environment: ${spring.profiles.active}
+    version: '@project.version@' # Reading From Pom

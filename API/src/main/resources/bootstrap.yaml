@@ -1,0 +1,14 @@
+spring:
+  application:
+    name: api-generator # this name will be searched in git for props
+  profiles:
+    active: ${APP_PROFILE:local}
+  cloud:
+    config:
+#      profile: ${APP_PROFILE:local}
+      uri: ${CONFIG_URL:http://localhost}
+      label: ${GIT_BRANCH:master}
+      fail-fast: true
+      retry:
+        max-attempts: 30
+        max-interval: 8000

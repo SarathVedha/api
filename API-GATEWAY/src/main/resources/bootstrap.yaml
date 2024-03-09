@@ -1,0 +1,17 @@
+spring:
+  application:
+    name: api-gateway # this name will be searched in git for props
+  profiles:
+    active: ${APP_PROFILE:local}
+  output:
+    ansi:
+      enabled: always
+  cloud:
+    config:
+#      profile: ${APP_PROFILE:local}
+      uri: ${CONFIG_URL}
+      label: ${GIT_BRANCH}
+      fail-fast: true
+      retry:
+        max-attempts: 30
+        max-interval: 8000

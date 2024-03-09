@@ -1,0 +1,22 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: gateway-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  backend:
+    serviceName: default-http-backend
+    servicePort: 80
+  rules:
+  - host: microservices.info
+    http:
+      paths:
+      - path: /snb
+        backend:
+          serviceName: frontend-app-svc
+          servicePort: 80
+      - path: /api-generator
+        backend:
+          serviceName: backend-app-gateway-svc
+          servicePort: 80

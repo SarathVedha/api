@@ -1,0 +1,122 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: dev
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-app-gateway-deploy
+  namespace: dev
+  labels:
+    app: backend-app-gateway
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend-app-gateway
+  template:
+    metadata:
+      labels:
+        app: backend-app-gateway
+    spec:
+      serviceAccountName: api-app-sa # --ServiceAccount name
+      containers:
+      - name: backend-app-gateway
+        image: sarathvedha/backend-gateway-app:latest
+        env:
+          - name: APP_PORT
+            valueFrom:
+              configMapKeyRef:
+                key: appPort
+                name: backend-app-gateway-config
+          - name: CONFIG_URL
+            valueFrom:
+              configMapKeyRef:
+                key: configUrl
+                name: backend-app-gateway-config
+          - name: GIT_BRANCH
+            valueFrom:
+              configMapKeyRef:
+                key: gitBranch
+                name: backend-app-gateway-config
+          - name: APP_PORT
+            valueFrom:
+              configMapKeyRef:
+                key: appPort
+                name: backend-app-gateway-config
+          - name: LOG_PATH
+            valueFrom:
+              configMapKeyRef:
+                key: logPath
+                name: backend-app-gateway-config
+          - name: SERVICE_HOSTNAME
+            valueFrom:
+              configMapKeyRef:
+                key: serviceHostName
+                name: backend-app-gateway-config
+          - name: SERVICE_URL
+            valueFrom:
+              configMapKeyRef:
+                key: serviceUrl
+                name: backend-app-gateway-config
+        resources:
+          requests:
+            memory: "200Mi"
+            cpu: "50m"
+          limits:
+            memory: "500Mi"
+            cpu: "500m"
+        ports:
+        - containerPort: 80
+        readinessProbe:
+          httpGet:
+            path: /actuator/health
+            port: 80
+          initialDelaySeconds: 40
+          timeoutSeconds: 10
+          periodSeconds: 3
+          failureThreshold: 2
+        livenessProbe:
+          httpGet:
+            path: /actuator/health
+            port: 80
+          initialDelaySeconds: 50
+          timeoutSeconds: 10
+          periodSeconds: 8
+          failureThreshold: 1
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-app-gateway-svc
+  namespace: dev
+  labels:
+    app: backend-app-gateway
+    spring-boot: "true"
+spec:
+  selector:
+    app: backend-app-gateway
+  ports:
+  - port: 80
+    targetPort: 80
+  type: LoadBalancer
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backend-app-gateway-config
+  namespace: dev
+  labels:
+    app: backend-app-gateway
+data:
+  appProfile: "prod"
+  configUrl: http://backend-app-config-svc:80
+  gitBranch: master
+  appPort: "80"
+  logPath: /app/log
+  serviceHostName: backend-app-registry-stateful-0
+  serviceUrl: http://backend-app-registry-stateful-0.backend-app-registry-headless.dev.svc.cluster.local:80

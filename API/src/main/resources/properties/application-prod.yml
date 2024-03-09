@@ -1,0 +1,104 @@
+server:
+#  port: 80
+  port: ${APP_PORT:80}
+#  ssl:
+#    key-store-type: PKCS12
+#    key-store: classpath:cert/vedha.p12
+#    key-store-password: Welcome@01
+#    key-alias: vedha
+  tomcat:
+    threads:
+      max: 250
+
+spring:
+  application:
+    name: API-GENERATOR
+  h2:
+    console:
+      enabled: true
+  datasource:
+    url: jdbc:h2:mem:h2
+    username: admin
+    password: admin
+    hikari:
+      maximum-pool-size: 50
+  jpa:
+    openInView: true
+#    show-sql: true
+    hibernate:
+      ddl-auto: update
+#    properties:
+#      hibernate:
+#        format_sql: true
+#  security:
+#    user:
+#      name: admin
+#      password: admin
+#      role: user
+  output:
+    ansi:
+      enabled: always
+#  boot:
+#    admin:
+#      client:
+#        url: ${ADMIN_URL}
+
+eureka:
+  instance:
+    prefer-ip-address: true
+    hostname: ${SERVICE_HOSTNAME}
+  client:
+    service-url:
+      defaultZone: ${SERVICE_URL}/eureka
+
+springdoc:
+  api-docs:
+    path: /api-generator/v3/api-docs
+  swagger-ui:
+    path: /api-generator/swagger-ui.html
+
+openai:
+  model: gpt-3.5-turbo
+  api-key: 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
+  api-url: https://api.openai.com/v1/chat/completions
+  temperature: 0
+  max_tokens: 100
+  max-completions: 1
+
+stub:
+  api:
+#    path: D:\Projects\SNB\CBX_FO\SNB_FO\src\assets\simulateAPI
+#    delay: 0
+    path: ${API_PATH}
+    delay: ${API_DELAY:2}
+
+management:
+  endpoint:
+    health:
+      show-details: always
+    shutdown:
+      enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  info:
+    env:
+      enabled: true
+    os:
+      enabled: true
+    java:
+      enabled: true
+
+logging:
+  pattern:
+    level: '%5p [${spring.application.name}, ${spring.profiles.active}]'
+  file:
+    name: ${LOG_PATH:.}/api-app.log
+
+info:
+  app:
+    name: ${spring.application.name}
+    description: APIs Generator Serves APIs and Features
+    environment: ${spring.profiles.active}
+    version: '@project.version@' # Reading From Pom

@@ -1,0 +1,126 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: dev
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-app-config-deploy
+  namespace: dev
+  labels:
+    app: backend-app-config
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend-app-config
+  template:
+    metadata:
+      labels:
+        app: backend-app-config
+    spec:
+      serviceAccountName: api-app-sa # --ServiceAccount name
+      containers:
+      - name: backend-app-config
+        image: sarathvedha/backend-config-app:latest
+        env:
+          - name: APP_PROFILE
+            valueFrom:
+              configMapKeyRef:
+                key: appProfile
+                name: backend-app-config-conf
+          - name: APP_PORT
+            valueFrom:
+              configMapKeyRef:
+                key: appPort
+                name: backend-app-config-conf
+          - name: LOG_PATH
+            valueFrom:
+              configMapKeyRef:
+                key: logPath
+                name: backend-app-config-conf
+          - name: GIT_URL
+            valueFrom:
+              configMapKeyRef:
+                key: gitUrl
+                name: backend-app-config-conf
+          - name: GIT_BRANCH
+            valueFrom:
+              configMapKeyRef:
+                key: gitBranch
+                name: backend-app-config-conf
+          - name: GIT_PATH
+            valueFrom:
+              configMapKeyRef:
+                key: gitPath
+                name: backend-app-config-conf
+          - name: BASE_CONFIG_PATH
+            valueFrom:
+              configMapKeyRef:
+                key: baseConfigPath
+                name: backend-app-config-conf
+          - name: SERVICE_URL
+            valueFrom:
+              configMapKeyRef:
+                key: serviceUrl
+                name: backend-app-config-conf
+        resources:
+          requests:
+            memory: "200Mi"
+            cpu: "50m"
+          limits:
+            memory: "500Mi"
+            cpu: "500m"
+        ports:
+        - containerPort: 80
+        readinessProbe:
+          httpGet:
+            path: /actuator/health
+            port: 80
+          initialDelaySeconds: 30
+          timeoutSeconds: 10
+          periodSeconds: 3
+          failureThreshold: 2
+        livenessProbe:
+          httpGet:
+            path: /actuator/health
+            port: 80
+          initialDelaySeconds: 50
+          timeoutSeconds: 5
+          periodSeconds: 8
+          failureThreshold: 1
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-app-config-svc
+  namespace: dev
+  labels:
+    app: backend-app-config
+    spring-boot: "true"
+spec:
+  selector:
+    app: backend-app-config
+  ports:
+  - port: 80
+    targetPort: 80
+  type: ClusterIP
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backend-app-config-conf
+  namespace: dev
+data:
+  appProfile: "prod"
+  appPort: "80"
+  logPath: /app/log
+  gitUrl: https://github.com/SarathVedha/api-configs.git
+  gitBranch: master
+  gitPath: /
+  baseConfigPath: configs
+  serviceUrl: http://backend-app-registry-stateful-0.backend-app-registry-headless.dev.svc.cluster.local:80

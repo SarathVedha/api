@@ -1,0 +1,50 @@
+server:
+  port: 8888
+
+spring:
+  application:
+    name: API-CONFIGS
+  output:
+    ansi:
+      enabled: always
+  cloud:
+    config:
+      server:
+        git:
+          uri: https://github.com/SarathVedha/api-configs.git
+          default-label: master
+          search-paths: /
+          clone-on-start: true
+          basedir: configs
+
+
+management:
+  endpoint:
+    health:
+      show-details: always
+    shutdown:
+      enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  info:
+    env:
+      enabled: true
+    os:
+      enabled: true
+    java:
+      enabled: true
+
+logging:
+  pattern:
+    level: '%5p [${spring.application.name}, ${spring.profiles.active}]'
+  file:
+    name: ${LOG_PATH:.}/api-config-app.log
+
+info:
+  app:
+    name: ${spring.application.name}
+    description: APIs Config Server
+    environment: ${spring.profiles.active}
+    version: '@project.version@' # Reading From Pom
