@@ -60,8 +60,10 @@ services:
       bridge-net:
   
   api-backend:
-    container_name: api-app
+    # container_name: api-app
     image: sarathvedha/backend-app:latest
+    deploy:
+      replicas: 2
     depends_on:
       - "api-config"
       - "api-discovery"
@@ -76,8 +78,8 @@ services:
       SERVICE_URL: http://api-discovery:8061
       API_DELAY: "2"
       API_PATH: /app/apis
-    ports:
-      - 8080:8080
+    # ports:
+    #   - 8080:8080
     restart: on-failure
     networks:
       bridge-net:
