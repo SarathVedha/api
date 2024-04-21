@@ -47,10 +47,10 @@ spec:
                 name: backend-app-registry-config
         resources:
           requests:
-            memory: "200Mi"
-            cpu: "50m"
+            memory: "256Mi"
+            cpu: "150m"
           limits:
-            memory: "500Mi"
+            memory: "1024Mi"
             cpu: "500m"
         ports:
         - containerPort: 80
