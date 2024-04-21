@@ -29,7 +29,12 @@ ENV SERVICE_URL=http://localhost:80
 ENV LOG_PATH=/app/log
 HEALTHCHECK --interval=5m --timeout=3s CMD curl -fkv http://localhost/actuator/health || exit 1
 
+#Giving Write privilage for heap and gc logs
+RUN mkdir -m 777 /app/java
+
 RUN useradd -r -d /app vedha
 USER vedha
 
-ENTRYPOINT [ "java", "-jar", "API.jar" ]
+ENTRYPOINT [ "java", "-XX:MinRAMPercentage=25", "-XX:MaxRAMPercentage=50", "-XX:+HeapDumpOnOutOfMemoryError", "-XX:HeapDumpPath=/app/java/heapdump.log", "-Xlog:gc:/app/java/gc.log", "-jar", "API.jar" ]
+
+#ENTRYPOINT [ "java", "-jar", "API.jar" ]
