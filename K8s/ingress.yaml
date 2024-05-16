@@ -1,7 +1,7 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: my-app-ingress
+  name: gateway-ingress
 spec:
   ingressClassName: nginx  # Assuming you're using Nginx ingress controller
   rules:
